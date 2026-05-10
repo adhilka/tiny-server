@@ -22,8 +22,9 @@ import AIManager from './components/AIManager';
 import FileManager from './components/FileManager';
 import AIChat from './components/AIChat';
 import Settings from './components/Settings';
+import LogBook from './components/LogBook';
 
-type View = 'dashboard' | 'terminal' | 'ai' | 'files' | 'chat' | 'settings';
+type View = 'dashboard' | 'terminal' | 'ai' | 'files' | 'chat' | 'settings' | 'logs';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>('dashboard');
@@ -60,13 +61,6 @@ export default function App() {
           </div>
           <span className="text-lg font-bold tracking-tight">OmniServer</span>
         </div>
-        <button 
-          onClick={() => setActiveView('chat')}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all border border-emerald-500/20"
-        >
-          <Sparkles className="w-3 h-3" />
-          Public Chat
-        </button>
       </header>
 
       {/* Main Content */}
@@ -85,22 +79,22 @@ export default function App() {
             {activeView === 'files' && <FileManager />}
             {activeView === 'chat' && <AIChat />}
             {activeView === 'settings' && <Settings />}
+            {activeView === 'logs' && <LogBook />}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[98%] max-w-lg h-20 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-[32px] px-2 py-2 shadow-2xl flex items-center justify-around z-50">
-        <NavItem icon={LayoutDashboard} label="Home" view="dashboard" color="text-indigo-400" />
-        <NavItem icon={Sparkles} label="Chat" view="chat" color="text-emerald-400" />
-        <NavItem icon={Bot} label="Models" view="ai" color="text-amber-400" />
-        <NavItem icon={Folder} label="Files" view="files" color="text-blue-400" />
-        <NavItem icon={TerminalIcon} label="Term" view="terminal" color="text-emerald-400" />
-        <NavItem icon={SettingsIcon} label="Set" view="settings" color="text-zinc-500" />
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm h-16 bg-zinc-900/95 backdrop-blur-2xl border border-white/5 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-around z-50 overflow-hidden">
+        <NavItem icon={LayoutDashboard} label="Dashboard" view="dashboard" color="text-zinc-200" />
+        <NavItem icon={Bot} label="AI Chat" view="chat" color="text-emerald-400" />
+        <NavItem icon={TerminalIcon} label="CMD" view="terminal" color="text-rose-400" />
+        <NavItem icon={Folder} label="Files" view="files" color="text-amber-400" />
+        <NavItem icon={SettingsIcon} label="System" view="settings" color="text-indigo-400" />
       </nav>
     </div>
   );
 }
 
-import { Server } from 'lucide-react';
+import { Server, History } from 'lucide-react';
 
