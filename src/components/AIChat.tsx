@@ -31,13 +31,12 @@ export default function AIChat() {
     setStreaming(true);
 
     try {
-      // We use the Ollama API directly here if accessible, or we'd need a proxy on the server
-      const response = await fetch('http://localhost:11434/api/generate', {
+      const response = await fetch('/api/ai/generate', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: model,
-          prompt: input,
-          stream: true
+          prompt: input
         })
       });
 
@@ -48,32 +47,33 @@ export default function AIChat() {
       let assistantMsg = { role: 'assistant', content: '' };
       setMessages(prev => [...prev, assistantMsg]);
 
+      let buffer = '';
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        try {
-          const json = JSON.parse(chunk);
-          assistantMsg.content += json.response;
-          setMessages(prev => {
-            const next = [...prev];
-            next[next.length - 1] = { ...assistantMsg };
-            return next;
-          });
-        } catch (e) {
-          // Sometimes chunks are multiple JSON objects
-          const lines = chunk.split('\n').filter(l => l.trim());
-          for (const line of lines) {
-            try {
-              const json = JSON.parse(line);
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Split by newlines as Ollama sends one JSON object per line
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the incomplete line in the buffer
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const json = JSON.parse(line);
+            if (json && typeof json.response === 'string') {
               assistantMsg.content += json.response;
               setMessages(prev => {
                 const next = [...prev];
-                next[next.length - 1] = { ...assistantMsg };
+                const last = { ...next[next.length - 1] };
+                last.content = assistantMsg.content;
+                next[next.length - 1] = last;
                 return next;
               });
-            } catch (e) {}
+            }
+          } catch (e) {
+            console.warn('Failed to parse chunk:', line);
           }
         }
       }

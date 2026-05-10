@@ -5,7 +5,9 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
 import multer from 'multer';
+import os from 'os';
 import { exec } from 'child_process';
+import AdmZip from 'adm-zip';
 
 const __filename = fileURLToPath(new URL(import.meta.url));
 const __dirname = path.dirname(__filename);
@@ -35,7 +37,32 @@ async function startServer() {
 
   // API Routes
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'running', platform: process.platform });
+    const interfaces = os.networkInterfaces();
+    const addresses = [];
+    for (const k in interfaces) {
+      const netInterface = interfaces[k];
+      if (netInterface) {
+        for (const address of netInterface) {
+          if (address.family === 'IPv4' && !address.internal) {
+            addresses.push(address.address);
+          }
+        }
+      }
+    }
+
+    res.json({ 
+      status: 'running', 
+      platform: process.platform,
+      arch: process.arch,
+      uptime: process.uptime(),
+      memory: {
+        free: os.freemem(),
+        total: os.totalmem(),
+        usage: Math.round((1 - (os.freemem() / os.totalmem())) * 100)
+      },
+      cpus: os.cpus().length,
+      localIps: addresses
+    });
   });
 
   // Ollama API Proxies
@@ -70,21 +97,116 @@ async function startServer() {
     }
   });
 
+  // AI Chat Proxy
+  app.post('/api/ai/generate', async (req, res) => {
+    const { model, prompt } = req.body;
+    try {
+      const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, stream: true }),
+      });
+
+      if (!response.body) {
+        return res.status(500).json({ error: 'No response body from Ollama' });
+      }
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      const reader = response.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+      }
+      res.end();
+    } catch (error) {
+      console.error('Proxy Error:', error);
+      res.status(500).json({ error: 'Ollama unreachable' });
+    }
+  });
+
+  // Web Hosting Middleware
+  app.use('/public', express.static(uploadsDir));
+
   // File Sharing API
   app.get('/api/files', (req, res) => {
-    const files = fs.readdirSync(uploadsDir).map(file => {
-      const stats = fs.statSync(path.join(uploadsDir, file));
+    const items = fs.readdirSync(uploadsDir).map(name => {
+      const filePath = path.join(uploadsDir, name);
+      const stats = fs.statSync(filePath);
+      const isDirectory = stats.isDirectory();
+      const ext = path.extname(name).toLowerCase();
+      
+      let hostUrl = `/public/${encodeURIComponent(name)}`;
+      let isWebReady = false;
+
+      if (isDirectory) {
+        // Check for index.html in root or dist
+        if (fs.existsSync(path.join(filePath, 'index.html'))) {
+          isWebReady = true;
+          hostUrl = `/public/${encodeURIComponent(name)}/index.html`;
+        } else if (fs.existsSync(path.join(filePath, 'dist', 'index.html'))) {
+          isWebReady = true;
+          hostUrl = `/public/${encodeURIComponent(name)}/dist/index.html`;
+        }
+      } else {
+        isWebReady = ['.html', '.htm'].includes(ext);
+      }
+
       return {
-        name: file,
+        name,
         size: stats.size,
-        updatedAt: stats.mtime
+        updatedAt: stats.mtime,
+        isDirectory,
+        isWebReady,
+        hostUrl
       };
     });
-    res.json(files);
+    res.json(items);
   });
 
   app.post('/api/upload', upload.single('file'), (req, res) => {
-    res.json({ message: 'File uploaded successfully', file: req.file });
+    if (!req.file) return res.status(400).json({ error: 'No file' });
+
+    // Auto-extract zip files
+    if (req.file.originalname.endsWith('.zip')) {
+      try {
+        const zip = new AdmZip(req.file.path);
+        const extractPath = path.join(uploadsDir, path.parse(req.file.originalname).name);
+        zip.extractAllTo(extractPath, true);
+        res.json({ message: 'Zip extracted and ready to host', path: extractPath });
+      } catch (err) {
+        res.status(500).json({ error: 'Failed to extract zip' });
+      }
+    } else {
+      res.json({ message: 'File uploaded successfully', file: req.file });
+    }
+  });
+
+  // Project Builder (Converts Vite/React)
+  app.post('/api/hosting/build', (req, res) => {
+    const { folderName } = req.body;
+    const projectPath = path.join(uploadsDir, folderName);
+
+    if (!fs.existsSync(projectPath)) return res.status(404).json({ error: 'Folder not found' });
+
+    // Check for package.json
+    if (!fs.existsSync(path.join(projectPath, 'package.json'))) {
+      return res.status(400).json({ error: 'Not a Node.js/Vite project (no package.json found)' });
+    }
+
+    res.write(JSON.stringify({ status: 'Starting build...' }) + '\n');
+
+    exec(`cd "${projectPath}" && npm install && npm run build`, (error, stdout, stderr) => {
+      if (error) {
+        res.write(JSON.stringify({ error: stderr || error.message }) + '\n');
+        return res.end();
+      }
+      res.write(JSON.stringify({ status: 'Build complete!', output: stdout }) + '\n');
+      res.end();
+    });
   });
 
   app.get('/api/download/:filename', (req, res) => {
@@ -96,11 +218,9 @@ async function startServer() {
     }
   });
 
-  // Terminal Simulation / Command Execution
+  // Terminal Simulation
   app.post('/api/terminal', (req, res) => {
     const { command } = req.body;
-    // VERY DANGEROUS - In a real app, you'd restrict this heavily.
-    // For this prompt "turns device into server", it's implied.
     exec(command, (error, stdout, stderr) => {
       res.json({
         output: stdout,

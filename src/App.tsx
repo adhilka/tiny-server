@@ -21,8 +21,9 @@ import Terminal from './components/Terminal';
 import AIManager from './components/AIManager';
 import FileManager from './components/FileManager';
 import AIChat from './components/AIChat';
+import Settings from './components/Settings';
 
-type View = 'dashboard' | 'terminal' | 'ai' | 'files' | 'chat';
+type View = 'dashboard' | 'terminal' | 'ai' | 'files' | 'chat' | 'settings';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>('dashboard');
@@ -83,17 +84,18 @@ export default function App() {
             {activeView === 'ai' && <AIManager />}
             {activeView === 'files' && <FileManager />}
             {activeView === 'chat' && <AIChat />}
+            {activeView === 'settings' && <Settings />}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm h-20 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-[32px] px-6 py-2 shadow-2xl flex items-center justify-between z-50">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-md h-20 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-[32px] px-4 py-2 shadow-2xl flex items-center justify-between z-50">
         <NavItem icon={LayoutDashboard} label="Home" view="dashboard" color="text-indigo-400" />
-        <NavItem icon={TerminalIcon} label="Term" view="terminal" color="text-emerald-400" />
-        <NavItem icon={Bot} label="Models" view="ai" color="text-amber-400" />
+        <NavItem icon={Bot} label="AI" view="ai" color="text-amber-400" />
         <NavItem icon={Folder} label="Files" view="files" color="text-blue-400" />
-        <NavItem icon={Sparkles} label="AI" view="chat" color="text-emerald-400" />
+        <NavItem icon={TerminalIcon} label="Term" view="terminal" color="text-emerald-400" />
+        <NavItem icon={SettingsIcon} label="Set" view="settings" color="text-zinc-400" />
       </nav>
     </div>
   );
