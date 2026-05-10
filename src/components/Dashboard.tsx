@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Cpu, Network, Server, Activity, Globe, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Cpu, Network, Server, Activity, Globe, Link as LinkIcon, ExternalLink, Share2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function Dashboard() {
@@ -122,6 +122,35 @@ export default function Dashboard() {
           </div>
         </div>
       </motion.div>
+
+      {/* Distribution / Install Command */}
+      <div className="p-6 rounded-[32px] glass-card border border-zinc-800 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-zinc-800 flex items-center justify-center">
+            <Share2 className="w-5 h-5 text-zinc-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-100">Remote Installation</h3>
+            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Global Setup Command</p>
+          </div>
+        </div>
+        
+        <p className="text-xs text-zinc-500 leading-relaxed">
+          Share this command for others to install your system via terminal:
+        </p>
+
+        <div className="p-3 bg-black/40 rounded-2xl flex items-center justify-between group border border-zinc-800">
+          <code className="text-[10px] font-mono text-emerald-500 truncate mr-2">
+            curl -fsSL https://raw.githubusercontent.com/adhilka/tiny-server/main/setup.sh | bash
+          </code>
+          <button 
+            onClick={() => navigator.clipboard.writeText('curl -fsSL https://raw.githubusercontent.com/adhilka/tiny-server/main/setup.sh | bash')}
+            className="text-[10px] font-bold text-zinc-400 hover:text-white uppercase tracking-widest whitespace-nowrap"
+          >
+            Copy
+          </button>
+        </div>
+      </div>
 
       {/* Resource Usage & Network Insights */}
       <div className="space-y-6">
