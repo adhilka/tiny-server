@@ -90,12 +90,13 @@ export default function App() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-md h-20 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-[32px] px-4 py-2 shadow-2xl flex items-center justify-between z-50">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[98%] max-w-lg h-20 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-[32px] px-2 py-2 shadow-2xl flex items-center justify-around z-50">
         <NavItem icon={LayoutDashboard} label="Home" view="dashboard" color="text-indigo-400" />
-        <NavItem icon={Bot} label="AI" view="ai" color="text-amber-400" />
+        <NavItem icon={Sparkles} label="Chat" view="chat" color="text-emerald-400" />
+        <NavItem icon={Bot} label="Models" view="ai" color="text-amber-400" />
         <NavItem icon={Folder} label="Files" view="files" color="text-blue-400" />
         <NavItem icon={TerminalIcon} label="Term" view="terminal" color="text-emerald-400" />
-        <NavItem icon={SettingsIcon} label="Set" view="settings" color="text-zinc-400" />
+        <NavItem icon={SettingsIcon} label="Set" view="settings" color="text-zinc-500" />
       </nav>
     </div>
   );
