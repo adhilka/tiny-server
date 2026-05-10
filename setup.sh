@@ -30,9 +30,8 @@ else
 fi
 
 echo "Cloning OmniServer repository..."
-# Note: User would replace this with their actual repo URL
-# git clone [REPO_URL] omniserver
-# cd omniserver
+git clone https://github.com/adhilka/tiny-server.git omniserver
+cd omniserver
 
 echo "Installing dependencies..."
 npm install
