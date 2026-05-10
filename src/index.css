@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  background-color: #0c0c0c;
+  color: #e0e0e0;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .glass-card {
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .terminal-text {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "OmniServer",
+  "description": "Turn your device into a local AI and file server. Manage Ollama models, share files, and run terminal commands through a mobile-optimized web UI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
