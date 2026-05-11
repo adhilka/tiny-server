@@ -60,7 +60,6 @@ export default function FileManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ folderName }),
       });
-      // Building might take a while, we'd ideally stream logs
       const data = await res.text();
       console.log(data);
       fetchFiles();
@@ -82,141 +81,99 @@ export default function FileManager() {
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-xl font-medium tracking-tight flex items-center gap-2 text-white">
-            <Folder className="w-5 h-5 text-blue-400" />
-            File Storage
-          </h2>
-          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Supports React/Vite Hosting</p>
+    <div className="space-y-10 pb-12">
+      <div className="flex items-center justify-between pb-6 border-b border-white/5">
+        <div>
+          <h2 className="text-xl font-medium text-white tracking-tight">Active Files</h2>
+          <p className="text-xs text-zinc-500 mt-1">Local distribution server</p>
         </div>
-        <label className="cursor-pointer group flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-500/20">
+        <label className="cursor-pointer flex items-center gap-2 bg-zinc-100 hover:bg-white text-zinc-950 px-4 py-2 rounded-xl text-xs font-semibold transition-all">
           {uploading ? (
-            <span className="flex items-center gap-2">
-              <Plus className="w-4 h-4 animate-spin" />
-              Processing...
-            </span>
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <>
-              <Upload className="w-4 h-4" />
-              <span>Upload Site</span>
-            </>
+            <Plus className="w-4 h-4" />
           )}
+          <span>{uploading ? 'Processing' : 'Deploy'}</span>
           <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} />
         </label>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 transition-colors group-focus-within:text-zinc-400" />
         <input 
           type="text" 
-          placeholder="Search items..."
+          placeholder="Filter volumes..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:border-blue-500/50 outline-none transition-colors"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-sm text-zinc-200 focus:border-zinc-700 outline-none transition-all placeholder:text-zinc-800"
         />
       </div>
 
-      <div className="grid gap-2">
-        {filteredFiles.map((file, i) => (
-          <motion.div 
-            key={file.name}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 hover:bg-zinc-900/50 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${file.isDirectory ? 'bg-amber-500/10 border-amber-500/20' : 'bg-zinc-900 border-zinc-800'}`}>
-                {file.isDirectory ? (
-                  <Folder className="w-5 h-5 text-amber-400" />
-                ) : (
-                  <FileText className="w-5 h-5 text-zinc-400" />
+      <div className="space-y-4">
+        <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest border-b border-white/5 pb-2">File Topology</h3>
+        <div className="divide-y divide-white/5">
+          {filteredFiles.map((file) => (
+            <motion.div 
+              key={file.name}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between py-4 group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-zinc-500 group-hover:text-zinc-200 transition-colors">
+                  {file.isDirectory ? <Folder className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-200">{file.name}</span>
+                    {file.isWebReady && (
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-500 uppercase">Live</span>
+                    )}
+                  </div>
+                  <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mt-0.5">
+                    {file.isDirectory ? 'Volume' : formatSize(file.size)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {file.isDirectory && !file.isWebReady && (
+                  <button
+                    onClick={() => runBuild(file.name)}
+                    disabled={!!building}
+                    className="p-2 text-zinc-500 hover:text-white transition-colors"
+                  >
+                    {building === file.name ? <Loader2 className="w-4 h-4 animate-spin text-zinc-400" /> : <Package className="w-4 h-4" />}
+                  </button>
+                )}
+                {file.isWebReady && (
+                  <a 
+                    href={file.hostUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 text-zinc-500 hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+                {!file.isDirectory && (
+                  <a 
+                    href={`/api/download/${encodeURIComponent(file.name)}`}
+                    className="p-2 text-zinc-400 hover:text-white transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                  </a>
                 )}
               </div>
-              <div className="overflow-hidden">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-zinc-100 truncate max-w-[120px] sm:max-w-xs">{file.name}</p>
-                  {file.isWebReady && (
-                    <span className="px-1 py-0.5 rounded bg-emerald-500/10 text-[8px] font-bold text-emerald-500 border border-emerald-500/20 uppercase tracking-widest">Live</span>
-                  )}
-                </div>
-                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                  {file.isDirectory ? 'Directory' : formatSize(file.size)}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {file.isDirectory && !file.isWebReady && (
-                <button
-                  onClick={() => runBuild(file.name)}
-                  disabled={!!building}
-                  className="p-2 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-all text-amber-400"
-                  title="Build Vite Project"
-                >
-                  {building === file.name ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
-                </button>
-              )}
-              {file.isWebReady && (
-                <a 
-                  href={file.hostUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-lg transition-all"
-                  title="Open Web Page"
-                >
-                  <ExternalLink className="w-4 h-4 text-indigo-400" />
-                </a>
-              )}
-              {!file.isDirectory && (
-                <a 
-                  href={`/api/download/${encodeURIComponent(file.name)}`}
-                  className="p-2 opacity-0 group-hover:opacity-100 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all"
-                  title="Download"
-                >
-                  <Download className="w-4 h-4 text-zinc-300" />
-                </a>
-              )}
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
         
         {filteredFiles.length === 0 && (
-          <div className="py-12 text-center border-2 border-dashed border-zinc-800 rounded-2xl">
-            <Folder className="w-8 h-8 text-zinc-700 mx-auto mb-1" />
-            <p className="text-sm text-zinc-600 font-medium">Empty Storage</p>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Upload folders or zip files</p>
+          <div className="py-20 text-center">
+            <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-[0.2em]">No Volumes Detected</p>
           </div>
         )}
-      </div>
-
-      <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-3">
-        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-          <Globe className="w-3 h-3" />
-          Pro Hosting Guide
-        </h3>
-        <div className="space-y-4">
-          <div className="flex gap-3">
-            <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</div>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              Upload a <code className="text-indigo-400">.zip</code> of your Vite/React project.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</div>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              OmniServer extracts it. Click the <Package className="inline w-3 h-3 text-amber-400" /> icon to run <code className="text-zinc-300">npm install && build</code>.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</div>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              Once the <code className="text-emerald-500">LIVE</code> badge appears, your app is hosted at your public URL.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

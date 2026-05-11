@@ -51,46 +51,44 @@ export default function Terminal() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] max-h-[70vh] glass-card rounded-2xl overflow-hidden border border-zinc-800">
-      <div className="bg-zinc-900/50 p-4 border-bottom border-zinc-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <TerminalIcon className="w-4 h-4 text-zinc-400" />
-          <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">System Terminal</span>
+    <div className="flex flex-col h-[600px] max-h-[85vh]">
+      <div className="flex items-center justify-between pb-6 border-b border-white/5">
+        <div>
+          <h2 className="text-xl font-medium text-white tracking-tight">Terminal</h2>
+          <p className="text-xs text-zinc-500 mt-1">Direct system access</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setLogs([])}
-            className="p-1 hover:bg-zinc-800 rounded transition-colors"
-          >
-            <Trash2 className="w-3 h-3 text-zinc-500" />
-          </button>
-        </div>
+        <button 
+          onClick={() => setLogs([])}
+          className="text-xs font-medium text-zinc-500 hover:text-white transition-colors"
+        >
+          Clear
+        </button>
       </div>
 
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-[13px] scrollbar-hide flex flex-col-reverse"
+        className="flex-1 overflow-y-auto py-8 space-y-6 font-mono text-[13px] flex flex-col-reverse"
       >
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {logs.map((log, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, x: -10 }}
+              initial={{ opacity: 0, x: -5 }}
               animate={{ opacity: 1, x: 0 }}
-              className="space-y-1 group"
+              className="space-y-2"
             >
-              <div className="flex items-center gap-2 text-zinc-500">
-                <span className="text-[10px] opacity-50">[{log.time}]</span>
-                <span className="text-emerald-500 font-bold">$</span>
-                <span className="text-zinc-300">{log.command}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-zinc-600 font-bold tracking-tighter">{log.time}</span>
+                <span className="text-indigo-400 font-bold">»</span>
+                <span className="text-zinc-300 font-medium">{log.command}</span>
               </div>
               {log.output && (
-                <div className="pl-4 text-zinc-400 whitespace-pre-wrap py-1 border-l border-zinc-800 ml-1">
+                <div className="pl-14 text-zinc-500 whitespace-pre-wrap leading-relaxed">
                   {log.output}
                 </div>
               )}
               {log.error && (
-                <div className="pl-4 text-red-500/80 italic leading-relaxed ml-1 border-l border-red-900/30">
+                <div className="pl-14 text-rose-500/80 italic">
                   {log.error}
                 </div>
               )}
@@ -99,32 +97,35 @@ export default function Terminal() {
         </AnimatePresence>
         
         {logs.length === 0 && (
-          <div className="h-full flex items-center justify-center text-zinc-600 text-xs italic">
-            No commands executed yet.
+          <div className="h-full flex flex-col items-center justify-center text-zinc-700 gap-4">
+            <TerminalIcon className="w-12 h-12 opacity-5" />
+            <p className="text-xs font-medium tracking-wide border border-white/5 px-3 py-1 rounded-full opacity-30 uppercase">Read Only Active</p>
           </div>
         )}
       </div>
 
-      <form 
-        onSubmit={executeCommand}
-        className="p-4 bg-zinc-900/50 border-t border-zinc-800 flex items-center gap-3"
-      >
-        <span className="text-emerald-500 font-bold">$</span>
-        <input 
-          type="text" 
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
-          placeholder="Enter shell command..."
-          className="flex-1 bg-transparent border-none outline-none text-zinc-200 placeholder:text-zinc-600 font-mono text-sm"
-        />
-        <button 
-          type="submit"
-          disabled={loading || !command.trim()}
-          className="p-2 bg-zinc-100 text-zinc-900 rounded-lg hover:bg-white transition-colors disabled:opacity-50"
+      <div className="pt-6 border-t border-white/5">
+        <form 
+          onSubmit={executeCommand}
+          className="relative flex items-center bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden focus-within:border-zinc-700 transition-all"
         >
-          {loading ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
-        </button>
-      </form>
+          <div className="pl-5 pr-3 text-zinc-600 font-bold">»</div>
+          <input 
+            type="text" 
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            placeholder="Command line input..."
+            className="w-full bg-transparent py-4 text-sm text-zinc-200 outline-none placeholder:text-zinc-800 font-mono"
+          />
+          <button 
+            type="submit"
+            disabled={loading || !command.trim()}
+            className="px-5 py-4 text-zinc-500 hover:text-white transition-colors"
+          >
+            {loading ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

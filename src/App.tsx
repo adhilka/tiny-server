@@ -9,73 +9,68 @@ import {
   Terminal as TerminalIcon, 
   Folder, 
   Bot, 
-  Settings as SettingsIcon, 
-  Share2,
-  Menu,
-  X,
-  Sparkles
+  Settings as SettingsIcon,
+  Server,
+  History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Dashboard from './components/Dashboard';
 import Terminal from './components/Terminal';
-import AIManager from './components/AIManager';
 import FileManager from './components/FileManager';
 import AIChat from './components/AIChat';
 import Settings from './components/Settings';
 import LogBook from './components/LogBook';
 
-type View = 'dashboard' | 'terminal' | 'ai' | 'files' | 'chat' | 'settings' | 'logs';
+type View = 'dashboard' | 'terminal' | 'files' | 'chat' | 'settings' | 'logs';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>('dashboard');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const NavItem = ({ icon: Icon, label, view, color }: { icon: any, label: string, view: View, color: string }) => (
+  const NavItem = ({ icon: Icon, label, view }: { icon: any, label: string, view: View }) => (
     <button
-      onClick={() => {
-        setActiveView(view);
-        setIsMenuOpen(false);
-      }}
-      className={`flex flex-col items-center gap-1.5 p-2 transition-all ${
-        activeView === view ? color : 'text-zinc-500 hover:text-zinc-300'
+      onClick={() => setActiveView(view)}
+      className={`px-4 py-2 transition-all rounded-xl flex items-center gap-2 ${
+        activeView === view 
+          ? 'bg-white text-zinc-950 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.1)]' 
+          : 'text-zinc-500 hover:text-zinc-300'
       }`}
     >
-      <Icon className={`w-5 h-5 ${activeView === view ? 'scale-110' : ''}`} />
-      <span className="text-[10px] font-bold uppercase tracking-widest">{label}</span>
-      {activeView === view && (
-        <motion.div 
-          layoutId="nav-glow"
-          className={`absolute -bottom-1 w-1 h-1 rounded-full ${color.replace('text-', 'bg-')}`} 
-        />
-      )}
+      <Icon className="w-4 h-4" />
+      <span className="text-[10px] uppercase tracking-widest hidden md:block">{label}</span>
     </button>
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 font-sans text-zinc-200">
+    <div className="min-h-screen bg-zinc-950 font-sans text-zinc-200 antialiased selection:bg-white selection:text-black">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900">
-            <Server className="w-5 h-5" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">OmniServer</span>
+      <header className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Server className="w-5 h-5 text-white" />
+          <span className="text-lg font-medium tracking-tight text-white italic">OmniServer</span>
         </div>
+        <button 
+          onClick={() => setActiveView('logs')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors ${
+            activeView === 'logs' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-200'
+          }`}
+        >
+          <History className="w-4 h-4" />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Events</span>
+        </button>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-xl mx-auto px-6 pt-6 pb-28">
+      <main className="max-w-xl mx-auto px-6 py-12 pb-32">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeView}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
             {activeView === 'dashboard' && <Dashboard />}
             {activeView === 'terminal' && <Terminal />}
-            {activeView === 'ai' && <AIManager />}
             {activeView === 'files' && <FileManager />}
             {activeView === 'chat' && <AIChat />}
             {activeView === 'settings' && <Settings />}
@@ -85,16 +80,14 @@ export default function App() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm h-16 bg-zinc-900/95 backdrop-blur-2xl border border-white/5 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-around z-50 overflow-hidden">
-        <NavItem icon={LayoutDashboard} label="Dashboard" view="dashboard" color="text-zinc-200" />
-        <NavItem icon={Bot} label="AI Chat" view="chat" color="text-emerald-400" />
-        <NavItem icon={TerminalIcon} label="CMD" view="terminal" color="text-rose-400" />
-        <NavItem icon={Folder} label="Files" view="files" color="text-amber-400" />
-        <NavItem icon={SettingsIcon} label="System" view="settings" color="text-indigo-400" />
+      <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 w-fit px-2 py-2 bg-zinc-900/90 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-1 z-50">
+        <NavItem icon={LayoutDashboard} label="Home" view="dashboard" />
+        <NavItem icon={Bot} label="AI" view="chat" />
+        <NavItem icon={TerminalIcon} label="CMD" view="terminal" />
+        <NavItem icon={Folder} label="Files" view="files" />
+        <NavItem icon={SettingsIcon} label="System" view="settings" />
       </nav>
     </div>
   );
 }
-
-import { Server, History } from 'lucide-react';
 

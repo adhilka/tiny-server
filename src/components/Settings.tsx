@@ -7,88 +7,55 @@ export default function Settings() {
   const [isPublic, setIsPublic] = useState(true);
 
   return (
-    <div className="space-y-8 pb-12">
-      <div className="space-y-1">
-        <h2 className="text-xl font-medium tracking-tight flex items-center gap-2 text-white">
-          <SettingsIcon className="w-5 h-5 text-zinc-400" />
-          System Settings
-        </h2>
-        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Configuration & Identity</p>
+    <div className="space-y-10 pb-12">
+      <div className="pb-6 border-b border-white/5">
+        <h2 className="text-xl font-medium text-white tracking-tight">System Settings</h2>
+        <p className="text-xs text-zinc-500 mt-1">Global node configuration</p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-12">
         {/* Device Identity */}
-        <div className="p-6 rounded-[32px] glass-card border border-zinc-800 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-800 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-amber-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-zinc-100">Device Identity</h3>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Local Node Name</p>
-            </div>
+        <div className="space-y-4">
+          <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Identity</h3>
+          <div className="space-y-2">
+            <label className="text-[10px] text-zinc-500 font-bold uppercase ml-1">Node Name</label>
+            <input 
+              type="text" 
+              value={hostName}
+              onChange={(e) => setHostName(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-5 py-4 text-sm text-zinc-200 outline-none focus:border-zinc-700 transition-all"
+            />
           </div>
-          
-          <input 
-            type="text" 
-            value={hostName}
-            onChange={(e) => setHostName(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-200 outline-none focus:border-amber-500/30 transition-colors"
-          />
         </div>
 
         {/* Network Visibility */}
-        <div className="p-6 rounded-[32px] glass-card border border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
-              <Globe className="w-5 h-5 text-indigo-400" />
-            </div>
+        <div className="space-y-4">
+          <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Network</h3>
+          <div className="flex items-center justify-between p-5 bg-zinc-900/30 rounded-2xl border border-white/5">
             <div>
-              <h3 className="text-sm font-bold text-zinc-100">Public Tunnel</h3>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Global Link Status</p>
+              <p className="text-sm font-medium text-zinc-200">Public Visibility</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Allow global tunnel bridging</p>
             </div>
-          </div>
-          
-          <button 
-            onClick={() => setIsPublic(!isPublic)}
-            className={`w-12 h-6 rounded-full p-1 transition-colors ${isPublic ? 'bg-indigo-500' : 'bg-zinc-800'}`}
-          >
-            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isPublic ? 'translate-x-6' : 'translate-x-0'}`} />
-          </button>
-        </div>
-
-        {/* Security */}
-        <div className="p-6 rounded-[32px] glass-card border border-zinc-800 space-y-4 opacity-50 grayscale pointer-events-none">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-red-500/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-red-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-zinc-100">Auth & Lock</h3>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Coming Soon</p>
-            </div>
+            <button 
+              onClick={() => setIsPublic(!isPublic)}
+              className={`w-10 h-5 rounded-full p-1 transition-colors ${isPublic ? 'bg-zinc-100' : 'bg-zinc-800'}`}
+            >
+              <div className={`w-3 h-3 rounded-full transition-transform ${isPublic ? 'translate-x-5 bg-zinc-950' : 'translate-x-0 bg-zinc-500'}`} />
+            </button>
           </div>
         </div>
 
         {/* Storage */}
-        <div className="p-6 rounded-[32px] glass-card border border-zinc-800 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-              <HardDrive className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-zinc-100">Storage Cleanup</h3>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Clear Uploads Cache</p>
-            </div>
-          </div>
-          <button className="w-full py-3 rounded-2xl bg-zinc-800 text-zinc-300 text-xs font-bold uppercase tracking-widest hover:bg-zinc-700 transition-colors">
-            Wipe Temporary Files
+        <div className="space-y-4">
+          <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Maintenance</h3>
+          <button className="w-full py-4 rounded-2xl border border-white/5 bg-zinc-900/30 text-zinc-400 text-xs font-semibold hover:text-white hover:bg-zinc-800 transition-all">
+            Wipe Cache Volumes
           </button>
         </div>
       </div>
 
-      <div className="text-center p-8">
-        <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-[0.2em]">OmniServer v1.0.4 - Pro Edition</p>
+      <div className="pt-20 text-center opacity-20">
+        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.4em]">OmniServer Architecture 1.0.4</p>
       </div>
     </div>
   );
